@@ -511,11 +511,9 @@ std::string LicenseInfo()
            FormatParagraph(strprintf("Copyright (C) %i-%i The Kindcoin Developers", 2023, COPYRIGHT_YEAR)) + "\n" +
            "\n" +
            FormatParagraph(_("Please contribute if you find Kindcoin useful. ")) + "\n" +
-           FormatParagraph(strprintf("Visit %s for further information about the software."),
-               URL_WEBSITE) +
+           FormatParagraph(strprintf("Visit %s for further information about the software.", URL_WEBSITE)) +
            "\n" +
-           FormatParagraph(strprintf("The source code is available from %s."),
-               URL_SOURCE_CODE) +
+           FormatParagraph(strprintf("The source code is available from %s.", URL_SOURCE_CODE)) +
            "\n" +
            "\n" +
            FormatParagraph(_("This is experimental software.")) + "\n" +

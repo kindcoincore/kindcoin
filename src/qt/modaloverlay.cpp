@@ -9,6 +9,7 @@
 
 #include <QResizeEvent>
 #include <QPropertyAnimation>
+#include <cmath>
 
 ModalOverlay::ModalOverlay(QWidget *parent) :
 QWidget(parent),
@@ -88,6 +89,7 @@ void ModalOverlay::tipUpdate(int count, const QDateTime& blockDate, double nVeri
         qint64 timeDelta = 0;
         qint64 remainingMSecs = 0;
         double remainingProgress = 1.0 - nVerificationProgress;
+        bool hasUsableEstimate = false;
         for (int i = 1; i < blockProcessTime.size(); i++)
         {
             QPair<qint64, double> sample = blockProcessTime[i];
@@ -96,16 +98,22 @@ void ModalOverlay::tipUpdate(int count, const QDateTime& blockDate, double nVeri
             if (sample.first < (currentDate.toMSecsSinceEpoch() - 500 * 1000) || i == blockProcessTime.size() - 1) {
                 progressDelta = progressStart-sample.second;
                 timeDelta = blockProcessTime[0].first - sample.first;
-                progressPerHour = progressDelta/(double)timeDelta*1000*3600;
-                remainingMSecs = remainingProgress / progressDelta * timeDelta;
+                if (progressDelta > 0.0 && timeDelta > 0) {
+                    progressPerHour = progressDelta/(double)timeDelta*1000*3600;
+                    const double estimate = remainingProgress / progressDelta * timeDelta;
+                    if (std::isfinite(progressPerHour) && std::isfinite(estimate) && estimate > 0.0) {
+                        remainingMSecs = (qint64)estimate;
+                        hasUsableEstimate = true;
+                    }
+                }
                 break;
             }
         }
         // show progress increase per hour
-        ui->progressIncreasePerH->setText(QString::number(progressPerHour*100, 'f', 2)+"%");
+        ui->progressIncreasePerH->setText(hasUsableEstimate ? QString::number(progressPerHour*100, 'f', 2)+"%" : tr("Unknown"));
 
         // show expected remaining time
-        ui->expectedTimeLeft->setText(GUIUtil::formateNiceTimeOffset(remainingMSecs/1000.0));
+        ui->expectedTimeLeft->setText(hasUsableEstimate ? GUIUtil::formateNiceTimeOffset(remainingMSecs/1000.0) : tr("Unknown"));
 
         static const int MAX_SAMPLES = 5000;
         if (blockProcessTime.count() > MAX_SAMPLES)

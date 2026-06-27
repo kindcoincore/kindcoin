@@ -23,6 +23,8 @@
 #include "rpcconsole.h"
 #include "utilitydialog.h"
 
+#include <algorithm>
+
 #ifdef ENABLE_WALLET
 #include "walletframe.h"
 #include "walletmodel.h"
@@ -79,7 +81,7 @@ BitcoinGUI::BitcoinGUI(const Config *cfg, const PlatformStyle *platformStyle, co
     QMainWindow(parent),
     clientModel(0),
     walletFrame(0),
-    // unitDisplayControl(0),
+    unitDisplayControl(0),
     labelWalletEncryptionIcon(0),
     labelWalletHDStatusIcon(0),
     labelConnectionsIcon(0),
@@ -188,7 +190,7 @@ BitcoinGUI::BitcoinGUI(const Config *cfg, const PlatformStyle *platformStyle, co
     QHBoxLayout *frameBlocksLayout = new QHBoxLayout(frameBlocks);
     frameBlocksLayout->setContentsMargins(3,0,3,0);
     frameBlocksLayout->setSpacing(3);
-    // unitDisplayControl = new UnitDisplayStatusBarControl(platformStyle);
+    unitDisplayControl = new UnitDisplayStatusBarControl(platformStyle);
     labelWalletEncryptionIcon = new QLabel();
     labelWalletHDStatusIcon = new QLabel();
     labelConnectionsIcon = new QLabel();
@@ -197,8 +199,8 @@ BitcoinGUI::BitcoinGUI(const Config *cfg, const PlatformStyle *platformStyle, co
 
     if(enableWallet)
     {
-        // frameBlocksLayout->addStretch();
-        // frameBlocksLayout->addWidget(unitDisplayControl);
+        frameBlocksLayout->addStretch();
+        frameBlocksLayout->addWidget(unitDisplayControl);
         frameBlocksLayout->addStretch();
         frameBlocksLayout->addWidget(labelWalletEncryptionIcon);
         frameBlocksLayout->addWidget(labelWalletHDStatusIcon);
@@ -226,6 +228,8 @@ BitcoinGUI::BitcoinGUI(const Config *cfg, const PlatformStyle *platformStyle, co
     progressBar = new GUIUtil::ProgressBar();
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
+    progressBarLabel->installEventFilter(this);
+    progressBar->installEventFilter(this);
 
     // Override style sheet for progress bar for styles that have a segmented progress bar,
     // as they make the text unreadable (workaround for issue #1071)
@@ -233,7 +237,7 @@ BitcoinGUI::BitcoinGUI(const Config *cfg, const PlatformStyle *platformStyle, co
     QString curStyle = QApplication::style()->metaObject()->className();
     if(curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle")
     {
-        progressBar->setStyleSheet("QProgressBar { background-color: #e8e8e8; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #FF8000, stop: 1 orange); border-radius: 7px; margin: 0px; }");
+        progressBar->setStyleSheet("QProgressBar { background-color: #f7f1f4; border: 1px solid #c58aa3; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #ec3b7a, stop: 1 #ff8ab3); border-radius: 7px; margin: 0px; }");
     }
 
     statusBar()->addWidget(progressBarLabel);
@@ -446,6 +450,25 @@ void BitcoinGUI::createMenuBar()
     }
     settings->addAction(optionsAction);
 
+    QMenu *window = appMenuBar->addMenu(tr("&Window"));
+    QAction *minimizeAction = window->addAction(tr("Minimize"));
+    minimizeAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
+    connect(minimizeAction, SIGNAL(triggered()), this, SLOT(showMinimized()));
+    QAction *restoreAction = window->addAction(tr("Restore"));
+    connect(restoreAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    window->addSeparator();
+    QAction *mainWindowAction = window->addAction(tr("Main Window"));
+    connect(mainWindowAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    window->addSeparator();
+    QAction *informationAction = window->addAction(tr("Information"));
+    connect(informationAction, SIGNAL(triggered()), this, SLOT(showDebugWindowActivateInfo()));
+    QAction *consoleAction = window->addAction(tr("Console"));
+    connect(consoleAction, SIGNAL(triggered()), this, SLOT(showDebugWindowActivateConsole()));
+    QAction *networkTrafficAction = window->addAction(tr("Network Traffic"));
+    connect(networkTrafficAction, SIGNAL(triggered()), this, SLOT(showDebugWindowActivateNetworkTraffic()));
+    QAction *peersAction = window->addAction(tr("Peers"));
+    connect(peersAction, SIGNAL(triggered()), this, SLOT(showDebugWindowActivatePeers()));
+
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
     if(walletFrame)
     {
@@ -462,8 +485,34 @@ void BitcoinGUI::createToolBars()
     if(walletFrame)
     {
         QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
+        toolbar->setObjectName("kindcoinTabsToolbar");
         toolbar->setMovable(false);
         toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        toolbar->setStyleSheet(
+            "QToolBar#kindcoinTabsToolbar {"
+            "    border-top: 1px solid #eadce2;"
+            "    border-bottom: 1px solid #d6cbd0;"
+            "    padding: 1px 0;"
+            "    spacing: 0;"
+            "}"
+            "QToolBar#kindcoinTabsToolbar QToolButton {"
+            "    border: 1px solid transparent;"
+            "    border-radius: 2px;"
+            "    margin: 1px;"
+            "}"
+            "QToolBar#kindcoinTabsToolbar QToolButton:hover {"
+            "    background-color: #f8d7e5;"
+            "    border-color: #f0a5c1;"
+            "}"
+            "QToolBar#kindcoinTabsToolbar QToolButton:checked {"
+            "    background-color: #f4bfd4;"
+            "    border-color: #ec3b7a;"
+            "}"
+            "QToolBar#kindcoinTabsToolbar QToolButton:pressed {"
+            "    background-color: #ef9ebe;"
+            "    border-color: #d62c68;"
+            "}"
+        );
         toolbar->addAction(overviewAction);
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
@@ -501,7 +550,7 @@ void BitcoinGUI::setClientModel(ClientModel *clientModel)
             walletFrame->setClientModel(clientModel);
         }
 #endif // ENABLE_WALLET
-        // unitDisplayControl->setOptionsModel(clientModel->getOptionsModel());
+        unitDisplayControl->setOptionsModel(clientModel->getOptionsModel());
         
         OptionsModel* optionsModel = clientModel->getOptionsModel();
         if(optionsModel)
@@ -530,7 +579,7 @@ void BitcoinGUI::setClientModel(ClientModel *clientModel)
             walletFrame->setClientModel(nullptr);
         }
 #endif // ENABLE_WALLET
-        // unitDisplayControl->setOptionsModel(nullptr);
+        unitDisplayControl->setOptionsModel(nullptr);
     }
 }
 
@@ -673,9 +722,27 @@ void BitcoinGUI::showDebugWindow()
     rpcConsole->activateWindow();
 }
 
+void BitcoinGUI::showDebugWindowActivateInfo()
+{
+    rpcConsole->setTabFocus(RPCConsole::TAB_INFO);
+    showDebugWindow();
+}
+
 void BitcoinGUI::showDebugWindowActivateConsole()
 {
     rpcConsole->setTabFocus(RPCConsole::TAB_CONSOLE);
+    showDebugWindow();
+}
+
+void BitcoinGUI::showDebugWindowActivateNetworkTraffic()
+{
+    rpcConsole->setTabFocus(RPCConsole::TAB_GRAPH);
+    showDebugWindow();
+}
+
+void BitcoinGUI::showDebugWindowActivatePeers()
+{
+    rpcConsole->setTabFocus(RPCConsole::TAB_PEERS);
     showDebugWindow();
 }
 
@@ -741,7 +808,7 @@ void BitcoinGUI::setNumConnections(int count)
     default: icon = ":/icons/connect_4"; break;
     }
     labelConnectionsIcon->setPixmap(platformStyle->SingleColorIcon(icon).pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-    labelConnectionsIcon->setToolTip(tr("%n active connection(s) to Bitcoin network", "", count));
+    labelConnectionsIcon->setToolTip(tr("%n active connection(s) to Kindcoin network", "", count));
 }
 
 void BitcoinGUI::updateHeadersSyncProgressLabel()
@@ -749,8 +816,16 @@ void BitcoinGUI::updateHeadersSyncProgressLabel()
     int64_t headersTipTime = clientModel->getHeaderTipTime();
     int headersTipHeight = clientModel->getHeaderTipHeight();
     int estHeadersLeft = (GetTime() - headersTipTime)/600;
-    if (estHeadersLeft > REQ_HEADER_HEIGHT_DELTA_SYNC)
-        progressBarLabel->setText(tr("Syncing Headers (%1%)...").arg(QString::number(100.0 / (headersTipHeight+estHeadersLeft)*headersTipHeight, 'f', 1)));
+    if (estHeadersLeft > REQ_HEADER_HEIGHT_DELTA_SYNC) {
+        const int estimatedHeaderTotal = headersTipHeight + estHeadersLeft;
+        if (headersTipHeight > 0 && estimatedHeaderTotal > 0) {
+            double headerProgress = 100.0 / estimatedHeaderTotal * headersTipHeight;
+            headerProgress = std::max(0.0, std::min(99.9, headerProgress));
+            progressBarLabel->setText(tr("Syncing Headers (%1%)...").arg(QString::number(headerProgress, 'f', 1)));
+        } else {
+            progressBarLabel->setText(tr("Syncing Headers..."));
+        }
+    }
 }
 
 void BitcoinGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVerificationProgress, bool header)
@@ -1009,6 +1084,15 @@ void BitcoinGUI::dropEvent(QDropEvent *event)
 
 bool BitcoinGUI::eventFilter(QObject *object, QEvent *event)
 {
+    if ((object == progressBar || object == progressBarLabel) && event->type() == QEvent::MouseButtonRelease)
+    {
+        if ((progressBarLabel && progressBarLabel->isVisible()) || (progressBar && progressBar->isVisible()))
+        {
+            showModalOverlay();
+            return true;
+        }
+    }
+
     // Catch status tip events
     if (event->type() == QEvent::StatusTip)
     {

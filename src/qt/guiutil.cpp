@@ -1057,6 +1057,11 @@ QString formateNiceTimeOffset(qint64 secs)
     const int DAY_IN_SECONDS = 24*60*60;
     const int WEEK_IN_SECONDS = 7*24*60*60;
     const int YEAR_IN_SECONDS = 31556952; // Average length of year in Gregorian calendar
+    const qint64 MAX_REASONABLE_SYNC_SECONDS = 10LL * YEAR_IN_SECONDS;
+    if (secs < 0 || secs > MAX_REASONABLE_SYNC_SECONDS)
+    {
+        return QObject::tr("Unknown");
+    }
     if(secs < 60)
     {
         timeBehindText = QObject::tr("%n seconds(s)","",secs);
