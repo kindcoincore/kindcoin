@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2015 The Bitcoin Core Developers
 // Copyright (c) 2014-2018 The Blackcoin Developers
 // Copyright (c) 2018-2025 The Blackcoin More Developers
-// Copyright (c) 2023-2025 The Kindcoin Developers
+// Copyright (c) 2023-2026 The Kindcoin Developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
