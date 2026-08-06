@@ -1,75 +1,75 @@
 <div align="center">
+  <img src="doc/img/kindcoin-core.png" alt="Kindcoin Core" width="156">
+  <h1>Kindcoin Core</h1>
+  <p><strong>Kindness-powered, open-source digital currency.</strong></p>
+  <p>
+    <a href="https://kindcoin.cc/">Website</a> &bull;
+    <a href="https://github.com/kindcoincore/kindcoin/releases/latest">Wallets</a> &bull;
+    <a href="https://explorer.kindcoin.cc/">Explorer</a> &bull;
+    <a href="https://discord.gg/Mcxs3ABbMz">Discord</a>
+  </p>
+</div>
 
-![foxdemo](https://kindcoin.cc/git/img/kcGITicon.png) 
+Kindcoin is an open-source peer-to-peer digital currency built around
+kindness, community, and hybrid proof-of-work/proof-of-stake security.
+Kindcoin Core provides the full desktop wallet, node, RPC interface, and
+command-line tools for the KCCC network.
 
-Kindcoin Core [KCCC, K] </div>
-=====================================
+## Network at a Glance
 
-https://kindcoin.cc
+| | Kindcoin mainnet |
+| --- | --- |
+| Ticker | `KCCC` |
+| Consensus | Hybrid PoW and PoS |
+| Target block time | 5 minutes |
+| P2P port | `21538` |
+| RPC port | `21537` |
+| Current wallet | `v13.3.2` |
+| License | MIT |
 
-What is Kindcoin?
-----------------
+## Get Kindcoin Core
 
-Kindcoin is a decentralised digital currency with near-instant transaction speeds and negligible transaction fees built upon Proof of Stake 3.0 (PoSV3, BPoS) as
-introduced by the Blackcoin development team.
+Official Windows and Linux packages are published on the
+[releases page](https://github.com/kindcoincore/kindcoin/releases/latest).
+Release downloads include SHA-256 checksums so packages can be verified before
+use.
 
-For more information about Kindcoin itself, see https://kindcoin.cc.
+Before upgrading, close the previous wallet cleanly and keep a secure backup
+of `wallet.dat`. Official release notes describe any version-specific steps.
 
-What is Kindcoin?
-----------------
+## Participate in the Network
 
-Kindcoin is the name of open source software which enables the use of this currency. It takes Kindcoin to the next level by building upon
-Bitcoin Core 0.13.2 with some patches from newer Bitcoin Core versions to offer performance enhancements, wider compatibility with third party services and a more advanced base.
+- **Run a node:** Keep Kindcoin Core online to validate and relay blocks and
+  transactions.
+- **Stake KCCC:** Unlock an encrypted wallet for staking to participate in
+  proof-of-stake block production.
+- **Mine KCCC:** Connect compatible mining software or pool infrastructure to
+  the proof-of-work network.
+- **Contribute:** Test releases, report reproducible issues, review changes,
+  and help other community members.
 
-For more information, as well as an immediately useable, binary version of the Kindcoin software, see https://kindcoin.cc.
+## Build from Source
 
-Ports
------
+Platform build instructions and dependency guidance are maintained in the
+[`doc`](doc) and [`depends`](depends) directories. Tagged releases are the
+recommended source points for production builds; the development branch may
+contain work that has not yet shipped in an official wallet.
 
-P2P | RPC
------------- | -------------
-21538 | 21537
+Useful references:
 
-License
--------
+- [Unix build notes](doc/build-unix.md)
+- [Windows build notes](doc/build-windows.md)
+- [Contribution guide](CONTRIBUTING.md)
+- [Change log](CHANGELOG.md)
 
-Kindcoin is released under the terms of the MIT license. See [COPYING](COPYING) for more
-information or see https://opensource.org/licenses/MIT.
+## Security and Support
 
-Development Process
--------------------
+Never share wallet private keys, seed material, passwords, or `wallet.dat`.
+Use the [Kindcoin community](https://discord.gg/Mcxs3ABbMz) for general support
+and the [issue tracker](https://github.com/kindcoincore/kindcoin/issues) for
+clear, reproducible software problems.
 
-The `master` branch is regularly built and tested, but is not guaranteed to be
-completely stable. [Tags](https://github.com/kindcoincore/kindcoin/tags) are created
-regularly to indicate new official, stable release versions of Kindcoin.
+## License
 
-Change log can be found in [CHANGELOG.md](CHANGELOG.md).
-
-The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-
-Testing
--------
-
-Testing and code review might be the bottleneck for development. Please help out by testing
-other people's pull requests, and remember this is a security-critical project where any mistake might cost people
-lots of money.
-
-### Automated Testing
-
-Developers are strongly encouraged to write [unit tests](/doc/unit-tests.md) for new code, and to
-submit new unit tests for old code. Unit tests can be compiled and run
-(assuming they weren't disabled in configure) with: `make check`
-
-There are also [regression and integration tests](/qa) of the RPC interface, written
-in Python, that are run automatically on the build server.
-These tests can be run (if the [test dependencies](/qa) are installed) with: `qa/pull-tester/rpc-tests.py`
-
-The Travis CI system makes sure that every pull request is built for Windows, Linux, and OS X, and that unit/sanity tests are run automatically.
-
-### Manual Quality Assurance (QA) Testing
-
-Changes should be tested by somebody other than the developer who wrote the
-code. This is especially important for large or high-risk changes. It is useful
-to add a test plan to the pull request description if testing the changes is
-not straightforward.
+Kindcoin Core is distributed under the MIT License. See [COPYING](COPYING) for
+the complete license text.

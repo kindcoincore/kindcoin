@@ -1,4 +1,8 @@
 # Changelog
+## v13.3.2 (2026-08-06)
+- Updated the desktop wallet, installer, and repository branding assets.
+- Updated copyright metadata for 2026.
+
 ## v13.3.0 (2024-1-24)
 - Changed Dev Fund Donation to 0% taking pre-mine into consideration.
 - Fixed Kindcoin wallet icon.
